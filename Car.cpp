@@ -6,7 +6,7 @@ Car::Car(string mk, string md, int yr, double rate, string plate, double insuran
 }
 
 void Car::displayCarInfo() const {
-    cout << "--- Car Information ---" << endl;
+    cout << "Car Information " << endl;
     cout << "Make/Model: " << make << " " << model << " (" << year << ")" << endl;
     cout << "Plate Number: " << plateNumber << endl;
     cout << "Rate per day: $" << rentalRatePerDay << endl;
@@ -22,7 +22,7 @@ double Car::calculateTotalRent(int days) const {
 double Car::calculateTotalRent(int days, bool withInsurance) const {
     double total = days * rentalRatePerDay;
     if (withInsurance) {
-        total += insuranceCost; 
+        total += insuranceCost;
         cout << "Insurance option added. Total: $" << total << endl;
     }
     return total;
@@ -55,7 +55,7 @@ bool Car::checkAvailability() const {
 }
 
 void Car::writeToFile(const string& filename) const {
-    ofstream outFile(filename); 
+    ofstream outFile(filename);
     if (outFile.is_open()) {
         outFile << make << "," << model << "," << year << "," << rentalRatePerDay << ","
             << plateNumber << "," << insuranceCost << "," << mileage << "," << isRented << "\n";
@@ -82,7 +82,7 @@ void Car::readFromFile(const string& filename) {
             getline(ss, token, ','); plateNumber = token;
             getline(ss, token, ','); insuranceCost = stod(token);
             getline(ss, token, ','); mileage = stoi(token);
-            getline(ss, token, ','); isRented = (token == "1" || token == "1\n"); 
+            getline(ss, token, ','); isRented = (token == "1" || token == "1\n");
 
             cout << "Car data read from file and updated. Plate: " << plateNumber << endl;
         }
@@ -107,7 +107,7 @@ void Car::allocateAndSortMileage() {
 
     mileageHistory[0] = mileage;
     for (int i = 1; i < count; ++i) {
-        mileageHistory[i] = (rand() % 100000) + 1000; 
+        mileageHistory[i] = (rand() % 100000) + 1000;
     }
 
     cout << "Before sorting: ";
