@@ -1,57 +1,44 @@
 ﻿#include <iostream>
-#include <vector>
-#include "CarRental.h" 
+#include "CarRental.h"
 
 using namespace std;
 
 int main() {
-    // 1. Створення об'єктів різних класів
-    EconomyCar car1("Toyota Corolla", 40.0);
-    SUV car2("Jeep Grand Cherokee", 80.0);
-    LuxuryCar car3("Porsche Panamera", 250.0);
+    SUV myJeep("Jeep Wrangler", 100.0);
+    Order order(&myJeep, "Alex Murphy", "AA000000", 3, true);
 
-    cout << "=== DEMONSTRATION 1: POLYMORPHISM ===" << endl;
-    // Використовуємо вказівник на базовий клас для демонстрації поліморфізму
-    vector<Vehicle*> garage;
-    garage.push_back(&car1);
-    garage.push_back(&car2);
-    garage.push_back(&car3);
+    cout << "=== INITIAL STATE ===" << endl;
+    order.showStatus(); 
 
-    for (const auto& v : garage) {
-        v->displayInfo(); // Викликається відповідний метод displayInfo
-        // Виклик чисто віртуальної функції calculateTotal
-        cout << "   -> Cost for 3 days with insurance: $" << v->calculateTotal(3, true) << endl;
-    }
-    cout << "====================================================\n" << endl;
+    cout << "\n=== TESTING PREFIX INCREMENT (++order) ===" << endl;
+    cout << "Extending rental by 1 day..." << endl;
+    ++order; 
+    order.showStatus();
 
+    cout << "\n=== TESTING POSTFIX INCREMENT (order++) ===" << endl;
+    cout << "Extending rental by another day (saving old state)..." << endl;
 
-    cout << "=== DEMONSTRATION 2: FULL SCENARIO ===" << endl;
+    Order oldState = order++;
 
-    // Крок 1: Клієнт вибирає авто (наприклад, SUV)
-    cout << "\n1. Client selects a car and fills the form..." << endl;
-    // Створення замовлення: 5 днів, зі страховкою
-    Order myOrder(&car2, "John Doe", "US123456", 5, true);
-    myOrder.showStatus();
+    cout << "Old State (copy): ";
+    oldState.showStatus();
 
-    // Крок 2: Спроба скасування (демо)
-    // myOrder.cancelOrder("Changed my mind"); 
+    cout << "Current State:    ";
+    order.showStatus();
 
-    // Крок 3: Адміністратор перевіряє
-    cout << "\n2. Admin reviews the order..." << endl;
-    myOrder.adminProcess(true); // Схвалено
+    cout << "\n=== TESTING DECREMENT (--order) ===" << endl;
+    cout << "Reducing rental by 1 day..." << endl;
+    --order; 
+    order.showStatus();
 
-    // Крок 4: Клієнт оплачує
-    cout << "\n3. Client makes payment..." << endl;
-    myOrder.payOrder();
+    cout << "\n=== TESTING BOUNDARY (Try to reduce below 1) ===" << endl;
+    Order shortOrder(&myJeep, "Test User", "000", 1, false);
+    cout << "Short order created (1 day): ";
+    shortOrder.showStatus();
 
-    // Крок 5: Користування і повернення (з пошкодженням та запізненням)
-    cout << "\n4. Returning the car..." << endl;
-
-    // Адмін помітив пошкодження
-    myOrder.addDamageFine(200.0);
-
-    // Повернення із запізненням
-    myOrder.returnCar(true);
+    cout << "Trying to decrement 1-day order..." << endl;
+    shortOrder--; 
+    shortOrder.showStatus();
 
     return 0;
 }

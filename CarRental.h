@@ -1,5 +1,4 @@
-﻿#pragma once
-#ifndef CARRENTAL_H
+﻿#ifndef CARRENTAL_H
 #define CARRENTAL_H
 
 #include <string>
@@ -8,10 +7,8 @@
 
 using namespace std;
 
-// Статуси замовлення
 enum OrderStatus { PENDING, APPROVED, REJECTED, CANCELED, PAID, CLOSED };
 
-// === Абстрактний базовий клас ===
 class Vehicle {
 protected:
     string model;
@@ -23,24 +20,17 @@ public:
 
     string getModel() const;
     double getRate() const;
-
-    // Чисто віртуальна функція (Requirement 2)
     virtual double calculateTotal(int days, bool insurance) const = 0;
-
-    // Віртуальна функція для виведення інформації
     virtual void displayInfo() const;
 };
 
-// === Похідний клас 1: Економ ===
 class EconomyCar : public Vehicle {
 public:
     EconomyCar(string m, double rate);
-    // Реалізація віртуальної функції
     double calculateTotal(int days, bool insurance) const override;
     void displayInfo() const override;
 };
 
-// === Похідний клас 2: Позашляховик ===
 class SUV : public Vehicle {
 public:
     SUV(string m, double rate);
@@ -48,7 +38,6 @@ public:
     void displayInfo() const override;
 };
 
-// === Похідний клас 3: Преміум ===
 class LuxuryCar : public Vehicle {
 public:
     LuxuryCar(string m, double rate);
@@ -56,32 +45,44 @@ public:
     void displayInfo() const override;
 };
 
-// === Клас Замовлення (керує логікою процесу) ===
 class Order {
 private:
-    Vehicle* car;          // Агрегація (вказівник на абстрактний клас)
+    Vehicle* car;
     string clientName;
     string passportData;
-    int days;
+    int days;            
     bool insurance;
     OrderStatus status;
     double finalAmount;
     double fines;
 
+    void updateCost();
+
 public:
     Order(Vehicle* v, string name, string pass, int d, bool ins);
 
-    // Дії клієнта
+
+    // Prefix ++ (e.g., ++order)
+    Order& operator++();
+
+    // Postfix ++ (e.g., order++) 
+    Order operator++(int);
+
+    // Prefix -- (e.g., --order)
+    Order& operator--();
+
+    // Postfix -- (e.g., order--)
+    Order operator--(int);
+
+
     void cancelOrder(string reason);
     void payOrder();
-
-    // Дії адміністратора
     void adminProcess(bool approve, string reason = "");
     void addDamageFine(double amount);
     void returnCar(bool lateReturn);
-
-    // Інфо
     void showStatus() const;
+
+    int getDays() const { return days; }
 };
 
 #endif

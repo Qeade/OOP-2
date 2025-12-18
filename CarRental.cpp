@@ -1,129 +1,135 @@
-﻿#include "CarRental.h"
+﻿// CarRental.cpp
+#include "CarRental.h"
 
-// --- Vehicle Implementation ---
+//  Vehicle Implementation
 Vehicle::Vehicle(string m, double rate) : model(m), dailyRate(rate) {}
-
 string Vehicle::getModel() const { return model; }
 double Vehicle::getRate() const { return dailyRate; }
-
 void Vehicle::displayInfo() const {
     cout << "[Vehicle] Model: " << model << ", Rate: $" << dailyRate << "/day" << endl;
 }
 
-// --- EconomyCar Implementation ---
+//  Derived Classes Implementation 
 EconomyCar::EconomyCar(string m, double rate) : Vehicle(m, rate) {}
-
 double EconomyCar::calculateTotal(int days, bool insurance) const {
     double total = dailyRate * days;
-    if (insurance) {
-        total += 10.0 * days; // Фіксована низька страховка
-    }
+    if (insurance) total += 10.0 * days;
     return total;
 }
+void EconomyCar::displayInfo() const { cout << "[Economy Class] " << model << endl; }
 
-void EconomyCar::displayInfo() const {
-    cout << "[Economy Class] " << model << ". Cheap and reliable." << endl;
-}
-
-// --- SUV Implementation ---
 SUV::SUV(string m, double rate) : Vehicle(m, rate) {}
-
 double SUV::calculateTotal(int days, bool insurance) const {
     double total = dailyRate * days;
-    if (insurance) {
-        total += (dailyRate * 0.15) * days; // Страховка залежить від ціни (15%)
-    }
+    if (insurance) total += (dailyRate * 0.15) * days;
     return total;
 }
+void SUV::displayInfo() const { cout << "[SUV Class] " << model << endl; }
 
-void SUV::displayInfo() const {
-    cout << "[SUV Class] " << model << ". Good for off-road." << endl;
-}
-
-// --- LuxuryCar Implementation ---
 LuxuryCar::LuxuryCar(string m, double rate) : Vehicle(m, rate) {}
-
 double LuxuryCar::calculateTotal(int days, bool insurance) const {
     double total = dailyRate * days;
-    // Luxury податок + висока страховка
-    total += 50.0; // Податок на розкіш разовий
-    if (insurance) {
-        total += (dailyRate * 0.25) * days; // 25% страховка
-    }
+    total += 50.0;
+    if (insurance) total += (dailyRate * 0.25) * days;
     return total;
 }
+void LuxuryCar::displayInfo() const { cout << "[Luxury Class] " << model << endl; }
 
-void LuxuryCar::displayInfo() const {
-    cout << "[Luxury Class] " << model << ". Premium comfort." << endl;
-}
+// Order Implementation 
 
-// --- Order Implementation ---
 Order::Order(Vehicle* v, string name, string pass, int d, bool ins)
     : car(v), clientName(name), passportData(pass), days(d), insurance(ins) {
     status = PENDING;
     fines = 0;
-    // Поліморфний виклик методу розрахунку ціни!
+    updateCost(); 
+}
+
+// Приватна функція для перерахунку ціни
+void Order::updateCost() {
     finalAmount = car->calculateTotal(days, insurance);
 }
+
+// оператори
+
+// Prefix ++: Збільшуємо, потім повертаємо змінений об'єкт
+Order& Order::operator++() {
+    days++;
+    updateCost();
+    return *this;
+}
+
+// Postfix ++: Створюємо копію, збільшуємо оригінал, повертаємо копію
+Order Order::operator++(int) {
+    Order temp = *this; 
+    days++;
+    updateCost();
+    return temp; 
+}
+
+// Prefix --
+Order& Order::operator--() {
+    if (days > 1) { // Захист: оренда не може бути 0 днів
+        days--;
+        updateCost();
+    }
+    return *this;
+}
+
+// Postfix --
+Order Order::operator--(int) {
+    Order temp = *this;
+    if (days > 1) {
+        days--;
+        updateCost();
+    }
+    return temp;
+}
+
 
 void Order::cancelOrder(string reason) {
     if (status == PENDING) {
         status = CANCELED;
-        cout << ">>> Client " << clientName << " canceled the order. Reason: " << reason << endl;
+        cout << ">>> Client " << clientName << " canceled. Reason: " << reason << endl;
     }
-    else {
-        cout << ">>> Cannot cancel. Order already processed." << endl;
-    }
+    else { cout << ">>> Cannot cancel." << endl; }
 }
 
 void Order::adminProcess(bool approve, string reason) {
     if (status != PENDING) return;
-
     if (approve) {
         status = APPROVED;
-        cout << ">>> ADMIN: Order Approved. Please pay $" << finalAmount << endl;
+        cout << ">>> ADMIN: Approved. Pay $" << finalAmount << endl;
     }
     else {
         status = REJECTED;
-        cout << ">>> ADMIN: Order Rejected. Reason: " << reason << endl;
+        cout << ">>> ADMIN: Rejected. Reason: " << reason << endl;
     }
 }
 
 void Order::payOrder() {
     if (status == APPROVED) {
         status = PAID;
-        cout << ">>> PAYMENT: Success. Amount $" << finalAmount << " received. Car is yours." << endl;
+        cout << ">>> PAYMENT: Success. Amount $" << finalAmount << " received." << endl;
     }
-    else {
-        cout << ">>> PAYMENT ERROR: Order is not approved yet." << endl;
-    }
+    else cout << ">>> PAYMENT ERROR: Not approved." << endl;
 }
 
 void Order::addDamageFine(double amount) {
     fines += amount;
-    cout << ">>> ADMIN: Damage reported! Fine added: $" << amount << endl;
+    cout << ">>> ADMIN: Damage fine added: $" << amount << endl;
 }
 
 void Order::returnCar(bool lateReturn) {
     if (status == PAID) {
         if (lateReturn) {
-            double penalty = 100.0; // Штраф за запізнення
-            fines += penalty;
-            cout << ">>> SYSTEM: Late return detected. Penalty: $" << penalty << endl;
+            fines += 100.0;
+            cout << ">>> SYSTEM: Late return penalty applied." << endl;
         }
-
-        double totalToPay = fines;
-        if (totalToPay > 0) {
-            cout << ">>> RETURN: You have outstanding fines: $" << totalToPay << ". Please pay now." << endl;
-        }
-        else {
-            cout << ">>> RETURN: Car returned successfully. No extra charges." << endl;
-        }
+        cout << ">>> RETURN: Final check. Outstanding: $" << fines << endl;
         status = CLOSED;
     }
 }
 
 void Order::showStatus() const {
-    cout << "--- Order Status for " << clientName << " (" << car->getModel() << ") ---" << endl;
-    cout << "Status Code: " << status << " | Total Price: $" << finalAmount << endl;
+    cout << "   [Order Info] Days: " << days << " | Total: $" << finalAmount << " | Status: " << status << endl;
 }
