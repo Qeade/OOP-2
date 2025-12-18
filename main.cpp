@@ -4,41 +4,52 @@
 using namespace std;
 
 int main() {
-    SUV myJeep("Jeep Wrangler", 100.0);
-    Order order(&myJeep, "Alex Murphy", "AA000000", 3, true);
+    RentalSystem agency;
 
-    cout << "=== INITIAL STATE ===" << endl;
-    order.showStatus(); 
+    cout << "=== STL VECTOR OPERATIONS ===" << endl;
 
-    cout << "\n=== TESTING PREFIX INCREMENT (++order) ===" << endl;
-    cout << "Extending rental by 1 day..." << endl;
-    ++order; 
-    order.showStatus();
+    // 1. push_back: Наповнення автопарку
+    cout << "\n[1] Populating Fleet (push_back)..." << endl;
+    agency.addCar(new EconomyCar("Ford Fiesta", 30.0));      
+    agency.addCar(new SUV("Jeep Wrangler", 90.0));         
+    agency.addCar(new LuxuryCar("BMW 7 Series", 220.0));    
+    agency.showFleet();
 
-    cout << "\n=== TESTING POSTFIX INCREMENT (order++) ===" << endl;
-    cout << "Extending rental by another day (saving old state)..." << endl;
+    // 2. insert: Вставка VIP авто на початок
+    cout << "\n[2] Adding VIP Car (insert at begin)..." << endl;
+    agency.addVipCarFront(new LuxuryCar("ROLLS ROYCE PHANTOM", 500.0));
+    // Тепер Rolls Royce = Index 0, всі інші зсунулись
+    agency.showFleet();
 
-    Order oldState = order++;
+    // 3. erase: Видалення авто (наприклад, BMW, яка тепер має індекс 3)
+    cout << "\n[3] Removing Car (erase index 3)..." << endl;
+    agency.removeCar(3);
+    agency.showFleet();
 
-    cout << "Old State (copy): ";
-    oldState.showStatus();
+    // 4. Створення замовлень
+    cout << "\n[4] Creating Orders..." << endl;
+    agency.createOrder(0, "Mr. Rich", "VIP001", 1, true);   
+    agency.createOrder(1, "John Doe", "US123", 5, false);    
 
-    cout << "Current State:    ";
-    order.showStatus();
+    // 5. Демонстрація операторів ++/-- 
+    cout << "\n[5] Modifying Order using Operators..." << endl;
+    Order& currentOrder = agency.getLastOrder(); 
 
-    cout << "\n=== TESTING DECREMENT (--order) ===" << endl;
-    cout << "Reducing rental by 1 day..." << endl;
-    --order; 
-    order.showStatus();
+    cout << "Before extension:";
+    currentOrder.showStatus();
 
-    cout << "\n=== TESTING BOUNDARY (Try to reduce below 1) ===" << endl;
-    Order shortOrder(&myJeep, "Test User", "000", 1, false);
-    cout << "Short order created (1 day): ";
-    shortOrder.showStatus();
+    cout << "Extending by 1 day (++order)..." << endl;
+    ++currentOrder;
 
-    cout << "Trying to decrement 1-day order..." << endl;
-    shortOrder--; 
-    shortOrder.showStatus();
+    cout << "After extension: ";
+    currentOrder.showStatus();
+
+    // 6. pop_back: Скасування останнього замовлення
+    cout << "\n[6] Canceling last order (pop_back)..." << endl;
+    agency.showOrdersHistory(); 
+    agency.removeLastOrder();   
+    agency.showOrdersHistory(); 
+
 
     return 0;
 }
